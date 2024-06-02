@@ -12,10 +12,9 @@
 package org.cryptobiotic.raire
 
 import org.cryptobiotic.raire.algorithm.RaireResult
-import java.beans.ConstructorProperties
 
 /**  */
-class RaireSolution @ConstructorProperties("metadata", "solution") constructor(
+data class RaireSolution(
     /** A replication of the metadata provided in RaireProblem. This is designed to include
      * information that is useful for election administrators (to associate with generated assertions)
      * or for assertion visualisation.  */
@@ -27,26 +26,14 @@ class RaireSolution @ConstructorProperties("metadata", "solution") constructor(
 ) {
     /** A wrapper around the outcome of RAIRE. The outcome is either a RaireResult (if no error arose) or
      * a RaireError (if an error did arise). Exactly one of the fields will be null.  */
-    class RaireResultOrError {
-        val Ok: RaireResult?
+    class RaireResultOrError(val Ok: RaireResult?, val Err: RaireError?) {
+          constructor(ok: RaireResult): this(ok, null)
+          constructor(err: RaireError): this(null, err)
 
-        val Err: RaireError?
-
-        /** Only used by the Jackson serialization which can only have one constructor annotated :-(  */
-        @ConstructorProperties("Ok", "Err")
-        constructor(Ok: RaireResult?, Err: RaireError?) {
-            this.Ok = Ok
-            this.Err = Err
+        override fun toString(): String {
+            return if (Ok != null) Ok.toString() else Err.toString()
         }
 
-        constructor(Ok: RaireResult?) {
-            this.Ok = Ok
-            this.Err = null
-        }
 
-        constructor(Err: RaireError?) {
-            this.Ok = null
-            this.Err = Err
-        }
     }
 }

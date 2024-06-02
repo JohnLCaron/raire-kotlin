@@ -18,8 +18,7 @@ import java.util.stream.IntStream
 /** This class stores the set of consolidated votes cast in the contest we are generating assertions for. A
  * consolidated votes defines a ranking and the number of times that ranking appears on a vote cast in the contest.  */
 class Votes(
-    /** Consolidated set of votes cast in a contest.  */
-    val votes: Array<Vote>,
+    val votes: Array<Vote>, // Consolidated set of votes cast in a contest.
     numCandidates: Int
 ) {
     /** Array, indexed by candidate number, indicating the first preference tally of each candidate in the contest.  */

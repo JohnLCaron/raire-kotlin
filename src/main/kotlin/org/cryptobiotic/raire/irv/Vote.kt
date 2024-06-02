@@ -19,10 +19,8 @@ import java.util.*
  * consolidation means that RAIRE can be more efficient by iterating over a smaller set of votes than if we
  * considered each ballot individually.  */
 data class Vote (
-    /** The number of votes that expressed the ranking 'prefs' on their ballot.  */
-    val n: Int,
-    /** A preference ranking. Note that prefs[0] denotes the first (highest) ranked candidate.  */
-    val prefs: IntArray
+    val n: Int, // The number of votes that expressed the ranking 'prefs' on their ballot.
+    val prefs: IntArray // A preference ranking. Note that prefs[0] denotes the first (highest) ranked candidate.
 ) {
     /** Find the highest preferenced candidate on this vote amongst the given set of continuing candidates.
      * return null or a candidate index.  */

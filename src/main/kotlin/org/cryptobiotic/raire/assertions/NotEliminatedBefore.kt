@@ -58,6 +58,11 @@ class NotEliminatedBefore(val winner: Int, val loser: Int) : Assertion() {
         return DifficultyAndMargin(difficulty, if (tallyWinner >= tallyLoser) tallyWinner - tallyLoser else 0)
     }
 
+    override fun toString(): String {
+        return "NotEliminatedBefore(loser=$loser, winner=$winner)"
+    }
+
+
     companion object {
         /**
          * Find the NEB assertion that best rules out the given candidate being the next eliminated, given that

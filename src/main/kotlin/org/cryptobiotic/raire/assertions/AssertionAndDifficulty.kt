@@ -36,4 +36,8 @@ data class AssertionAndDifficulty(
      * a non-null value using the constructor. This is useful primarily to people using this data type
      * in external software to annotate a set of assertions being verified.  */
     val status: Map<String, Any>? = null,
-)
+) {
+    override fun toString(): String {
+        return "  $assertion, difficulty=$difficulty, margin=$margin)"
+    }
+}
