@@ -10,6 +10,9 @@ repositories {
 }
 
 dependencies {
+    implementation(libs.bundles.logging)
+    implementation("ch.obermuhlner:big-math:2.3.2")
+    implementation("org.apache.commons:commons-text:1.10.0") // TODO remove
     testImplementation(kotlin("test"))
 }
 

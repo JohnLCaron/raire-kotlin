@@ -1,0 +1,38 @@
+/*
+Copyright 2024 Democracy Developers
+
+The Raire Service is designed to connect colorado-rla and its associated database to
+the raire assertion generation engine (https://github.com/DemocracyDevelopers/raire-java).
+
+This file is part of raire-service.
+
+raire-service is free software: you can redistribute it and/or modify it under the terms
+of the GNU Affero General Public License as published by the Free Software Foundation, either
+version 3 of the License, or (at your option) any later version.
+
+raire-service is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License along with
+raire-service. If not, see <https://www.gnu.org/licenses/>.
+*/
+package org.cryptobiotic.raireservice.entity
+
+/**
+ * The unique identifier for a CVRContestInfo entity is a CVR Id and a contest Id together.
+ * This class defines a composite key for the CVRContestInfo entity. Note that while IntelliJ might
+ * tell you that the fields in this class are not used, they are used to define a compound primary
+ * key that involves two long attributes when retrieving CVR contest data from the database.
+ */
+data class CVRContestInfoId (
+    /**
+     * Id of the CVR to which the CVRContestInfo refers.
+     */
+    private val cvrId: Long = 0,
+
+    /**
+     * Id of the contest whose vote data, for a given CVR, is being captured by the CVRContestInfo.
+     */
+    val contestId: Long = 0,
+)

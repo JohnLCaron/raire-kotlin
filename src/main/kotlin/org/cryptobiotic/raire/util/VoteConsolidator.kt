@@ -39,6 +39,10 @@ class VoteConsolidator {
         for (i in candidateNames.indices) candidateNameToIndex[candidateNames[i]] = i
     }
 
+    constructor(candidateNames: List<String>) {
+        for (i in candidateNames.indices) candidateNameToIndex[candidateNames[i]] = i
+    }
+
     /** Call addVote({0,5,2}) to add a vote first for candidate 0, second for candidate 5, third for candidate 2  */
     fun addVote(preferences: IntArray) {
         val key = HashableIntArray(preferences)
@@ -84,4 +88,8 @@ class VoteConsolidator {
             return array.contentHashCode()
         }
     }
+}
+
+inline fun <reified T> toArray(list: List<*>): Array<T> {
+    return (list as List<T>).toTypedArray()
 }
