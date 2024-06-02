@@ -97,6 +97,10 @@ class NotEliminatedNext(
         }
     }
 
+    override fun toString(): String {
+        return "NotEliminatedNext(winner=$winner, loser=$loser, continuing=${continuing.contentToString()})"
+    }
+
     companion object {
         /** Find the best NEN assertion that will rule out the outcome where the given winner is eliminated
          * next when only the specified candidates are continuing, on the basis of the set of Votes (votes)

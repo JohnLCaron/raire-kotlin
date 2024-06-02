@@ -37,9 +37,9 @@ class TestVoteConsolidator {
         Assertions.assertEquals(2, shouldBe2VotesMultiplicities1and2.size)
         // order is not guaranteed. Work out which is which.
         val vote01: Vote =
-            if (shouldBe2VotesMultiplicities1and2[0].n === 2) shouldBe2VotesMultiplicities1and2[0] else shouldBe2VotesMultiplicities1and2[1]
+            if (shouldBe2VotesMultiplicities1and2[0].n == 2) shouldBe2VotesMultiplicities1and2[0] else shouldBe2VotesMultiplicities1and2[1]
         val vote2: Vote =
-            if (shouldBe2VotesMultiplicities1and2[0].n === 2) shouldBe2VotesMultiplicities1and2[1] else shouldBe2VotesMultiplicities1and2[0]
+            if (shouldBe2VotesMultiplicities1and2[0].n == 2) shouldBe2VotesMultiplicities1and2[1] else shouldBe2VotesMultiplicities1and2[0]
         assertEquals(2, vote01.n)
         assertArrayEquals(intArrayOf(0, 1), vote01.prefs)
         assertEquals(1, vote2.n)
@@ -62,9 +62,9 @@ class TestVoteConsolidator {
         Assertions.assertEquals(2, shouldBe2VotesMultiplicities1and2.size)
         // order is not guaranteed. Work out which is which.
         val vote01: Vote =
-            if (shouldBe2VotesMultiplicities1and2[0].n === 2) shouldBe2VotesMultiplicities1and2[0] else shouldBe2VotesMultiplicities1and2[1]
+            if (shouldBe2VotesMultiplicities1and2[0].n == 2) shouldBe2VotesMultiplicities1and2[0] else shouldBe2VotesMultiplicities1and2[1]
         val vote2: Vote =
-            if (shouldBe2VotesMultiplicities1and2[0].n === 2) shouldBe2VotesMultiplicities1and2[1] else shouldBe2VotesMultiplicities1and2[0]
+            if (shouldBe2VotesMultiplicities1and2[0].n == 2) shouldBe2VotesMultiplicities1and2[1] else shouldBe2VotesMultiplicities1and2[0]
         assertEquals(2, vote01.n)
         assertArrayEquals(intArrayOf(0, 1), vote01.prefs)
         assertEquals(1, vote2.n)
