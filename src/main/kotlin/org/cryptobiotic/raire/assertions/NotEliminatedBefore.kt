@@ -32,7 +32,7 @@ class NotEliminatedBefore(val winner: Int, val loser: Int) : Assertion() {
     override val isNEB: Boolean
         get() = true
 
-    override fun okEliminationOrderSuffix(eliminationOrderSuffix: IntArray?): EffectOfAssertionOnEliminationOrderSuffix? {
+    override fun okEliminationOrderSuffix(eliminationOrderSuffix: IntArray?): EffectOfAssertionOnEliminationOrderSuffix {
         for (i in eliminationOrderSuffix!!.indices.reversed()) {
             val c = eliminationOrderSuffix[i] // iterate in reverse order over eliminationOrderSuffix
             if (c == winner) return EffectOfAssertionOnEliminationOrderSuffix.Ok // winner is after loser
@@ -127,7 +127,6 @@ class NotEliminatedBefore(val winner: Int, val loser: Int) : Assertion() {
                     ) else  // consider WO(c′′,c): Assertion that c′′ ∈ C\π beats c in a winner-only audit with winner c′′ and loser c
                     NotEliminatedBefore(altC, candidate)
                 val dam = cache.difficulty(contest)
-                if (dam == null) return null
                 if (dam.difficulty < bestDifficulty) {
                     bestDifficulty = dam.difficulty
                     bestAssertion = contest

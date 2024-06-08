@@ -69,17 +69,16 @@ class RaireProblem(
         if (time_limit_seconds != null && (time_limit_seconds <= 0.0 || time_limit_seconds.isNaN())) {
             RaireSolution.RaireResultOrError(RaireError.InvalidTimeout())
         } else {
-            val timeout: TimeOut = TimeOut(null, time_limit_seconds)
+            val timeout = TimeOut(null, time_limit_seconds)
             try {
-                println(this.num_candidates)
                 if (this.num_candidates < 1) throw RaireException(RaireError.InvalidNumberOfCandidates())
                 val votes = Votes(this.votes, this.num_candidates)
                 RaireSolution.RaireResultOrError(
                     RaireResult(
                         votes,
-                        winner, // TODO null?
+                        winner, // TODO null is allowed.
                         audit,
-                        if (trim_algorithm == null) TrimAlgorithm.MinimizeTree else trim_algorithm,
+                        trim_algorithm ?: TrimAlgorithm.MinimizeTree,
                         timeout
                     )
                 )

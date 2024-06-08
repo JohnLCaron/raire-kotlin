@@ -27,16 +27,14 @@ class NotEliminatedBeforeCache(votes: Votes, audit: AuditType) {
         for (winner in 0 until votes.numCandidates()) {
             for (loser in 0 until votes.numCandidates()) {
                 cache[winner][loser] =
-                    if (winner == loser) DifficultyAndMargin(Double.POSITIVE_INFINITY, 0) else NotEliminatedBefore(
-                        winner,
-                        loser
-                    ).difficulty(votes, audit)
+                    if (winner == loser) DifficultyAndMargin(Double.POSITIVE_INFINITY, 0)
+                    else NotEliminatedBefore(winner, loser).difficulty(votes, audit)
             }
         }
     }
 
     /** Return the difficulty and margin associated with a given NEB assertion (entry).  */
-    fun difficulty(entry: NotEliminatedBefore): DifficultyAndMargin? {
-        return cache[entry.winner][entry.loser]
+    fun difficulty(entry: NotEliminatedBefore): DifficultyAndMargin {
+        return cache[entry.winner][entry.loser]!! // TODO invalid entry would give invalid index, but cant return null.
     }
 }

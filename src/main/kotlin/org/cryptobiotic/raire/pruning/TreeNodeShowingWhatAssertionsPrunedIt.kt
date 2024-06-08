@@ -16,6 +16,8 @@ import org.cryptobiotic.raire.RaireException
 import org.cryptobiotic.raire.assertions.Assertion
 import org.cryptobiotic.raire.assertions.EffectOfAssertionOnEliminationOrderSuffix
 import org.cryptobiotic.raire.time.TimeOut
+import org.cryptobiotic.raire.util.toArray
+import org.cryptobiotic.raire.util.toIntArray
 import java.util.*
 
 /** Produce a tree of reverse-elimination-order descending down until either
@@ -26,11 +28,11 @@ import java.util.*
  * for their children to be pruned. See HowFarToContinueSearchTreeWhenPruningAssertionFound for details.
  * This is useful for finding redundant assertions
  * that can be removed, at the cost of making the frontier larger.
- *
  */
+
 class TreeNodeShowingWhatAssertionsPrunedIt(
     parent_elimination_order_suffix: IntArray, // The candidate eliminated at this step.
-    candidate_being_eliminated_at_this_node: Int,
+    val candidate_being_eliminated_at_this_node: Int,
     relevant_assertions: ArrayList<Int>,
     all_assertions: Array<Assertion>,
     num_candidates: Int,
@@ -63,7 +65,6 @@ class TreeNodeShowingWhatAssertionsPrunedIt(
                 EffectOfAssertionOnEliminationOrderSuffix.Contradiction -> pruning_assertions.add(assertion_index)
                 EffectOfAssertionOnEliminationOrderSuffix.Ok -> {}
                 EffectOfAssertionOnEliminationOrderSuffix.NeedsMoreDetail -> still_relevant_assertions.add(assertion_index)
-                else -> {} // LOOK added
             }
         }
         val children = mutableListOf<TreeNodeShowingWhatAssertionsPrunedIt>()
@@ -101,7 +102,7 @@ class TreeNodeShowingWhatAssertionsPrunedIt(
             }
         }
         this.valid = valid
-        this.children = Array(children.size) { children[it] } // convert to Array
-        this.pruning_assertions = IntArray(pruning_assertions.size) { pruning_assertions[it] }// convert to IntArray
+        this.children = toArray(children)
+        this.pruning_assertions = toIntArray(pruning_assertions)
     }
 }

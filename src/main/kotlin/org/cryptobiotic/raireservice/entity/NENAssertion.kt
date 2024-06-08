@@ -22,6 +22,7 @@ package org.cryptobiotic.raireservice.entity
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.cryptobiotic.raire.assertions.AssertionAndDifficulty
 import org.cryptobiotic.raire.assertions.NotEliminatedNext
+import org.cryptobiotic.raire.util.toIntArray
 import org.cryptobiotic.raireservice.RaireErrorCode
 import org.cryptobiotic.raireservice.service.Metadata
 import org.cryptobiotic.raireservice.RaireServiceException
@@ -79,7 +80,8 @@ class NENAssertion
         }
 
         // Check for validity of the assertion with respect to the given list of candidate names
-        if (w != -1 && l != -1 && continuing.find { it == -1 } == null) { // TODO changed - not sure if correct
+        // (w != -1 && l != -1 && Arrays.stream(continuing).noneMatch(c -> c == -1)) {
+        if (w != -1 && l != -1 && continuing.find { it == -1 } == null) {
             val status: MutableMap<String, Any> = HashMap()
             status[Metadata.STATUS_RISK] = currentRisk
 
@@ -90,7 +92,7 @@ class NENAssertion
                 )
             }
             return AssertionAndDifficulty(
-                NotEliminatedNext(w, l, IntArray(continuing.size) { continuing[it] }),
+                NotEliminatedNext(w, l, toIntArray(continuing)),
                 difficulty,
                 margin,
                 status
@@ -106,19 +108,12 @@ class NENAssertion
     }
 
     override val description: String
-        /**
-         * {@inheritDoc}
-         */
         get() = String.format(
             "%s NEN %s, assuming candidates %s are continuing, with diluted margin %f",
             winner, loser, assumedContinuing, dilutedMargin
         )
 
     override val assertionType: String
-        /**
-         * Print the assertion type. Used for CSV file output.
-         * @return The string "NEN"
-         */
         get() = "NEN"
 
     companion object {

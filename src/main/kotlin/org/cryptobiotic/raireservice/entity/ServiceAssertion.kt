@@ -90,10 +90,6 @@ abstract class ServiceAssertion {
         protected set
 
     /**
-     * Get the list of assumed continuing candidates for this assertion.
-     * @return the list of assumed continuing candidates for this assertion.
-     */
-    /**
      * List of candidates that the Assertion assumes are 'continuing' in the Assertion's context.
      * Note that this is always empty for NEB assertions.
      */
@@ -292,15 +288,11 @@ abstract class ServiceAssertion {
         }
     }
 
-    /**
-     * Return a description of the Assertion in a human-readable format.
-     */
-    abstract val description: String?
+    /** Return a description of the Assertion in a human-readable format. */
+    abstract val description: String
 
-    /**
-     * Print the assertion type, either NEN or NEB.
-     */
-    abstract val assertionType: String?
+    /** Print the assertion type, either NEN or NEB. */
+    abstract val assertionType: String
 
     companion object {
         private val logger = KotlinLogging.logger("ServiceAssertion")

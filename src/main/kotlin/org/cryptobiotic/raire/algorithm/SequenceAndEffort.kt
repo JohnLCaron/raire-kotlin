@@ -150,7 +150,7 @@ internal class SequenceAndEffort(
         frontier: PriorityQueue<SequenceAndEffort>,
         lower_bound: Double
     ): Double {
-        var lowerBound = lower_bound // LOOK changed
+        var lowerBound = lower_bound
         if (java.lang.Double.isInfinite(difficulty())) { // 23 if (ASN (asr[ba[π ′ ]]) = ∞):
             //println!("Couldn't deal with {:?}",new_sequence.pi);
             throw RaireException(RaireError.CouldNotRuleOut(pi)) // 24 terminate algorithm, full recount necessary

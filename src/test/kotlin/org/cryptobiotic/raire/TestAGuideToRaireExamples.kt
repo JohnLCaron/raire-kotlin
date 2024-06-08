@@ -80,10 +80,10 @@ class TestAGuideToRaireExamples {
         val votes: Votes = votes
         val minAssertions = RaireResult(votes, C, AUDIT, TrimAlgorithm.MinimizeAssertions, TimeOut.never())
         assertEquals(27.0, minAssertions.difficulty, 1e-6)
-        assertEquals(5, minAssertions.assertions.size)
+        assertEquals(5, minAssertions.aandd.size)
         val minTree: RaireResult = RaireResult(votes, C, AUDIT, TrimAlgorithm.MinimizeTree, TimeOut.never())
         assertEquals(27.0, minTree.difficulty, 1e-6)
-        assertEquals(6, minTree.assertions.size)
+        assertEquals(6, minTree.aandd.size)
     }
 
     companion object {

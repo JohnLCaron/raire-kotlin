@@ -101,7 +101,7 @@ object testUtils {
         return retrievedMargin == margin && doubleComparator.compare(
             retrievedDifficulty,
             difficulty
-        ) == 0 && result.assertions.size == numAssertions
+        ) == 0 && result.aandd.size == numAssertions
     }
 
     /**

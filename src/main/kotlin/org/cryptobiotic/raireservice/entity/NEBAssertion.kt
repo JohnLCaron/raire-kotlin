@@ -57,9 +57,6 @@ class NEBAssertion
 
 ) : ServiceAssertion(contestName, candidates[neb.winner], candidates[neb.loser], margin, universeSize, difficulty) {
 
-    /**
-     * {@inheritDoc}
-     */
     override fun convert(candidates: List<String?>): AssertionAndDifficulty {
         val prefix = "[convert]"
         logger.debug {

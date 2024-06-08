@@ -19,8 +19,7 @@ import org.cryptobiotic.raire.assertions.NotEliminatedBefore
 import org.cryptobiotic.raire.assertions.NotEliminatedNext
 import org.cryptobiotic.raire.time.TimeOut
 import java.util.*
-import java.util.function.Function
-import java.util.function.IntFunction
+import java.util.function.Predicate
 import java.util.function.Supplier
 import java.util.stream.Collectors
 import java.util.stream.IntStream
@@ -61,7 +60,7 @@ class HeuristicWorkOutWhichAssertionsAreUsed {
 
         // now check to see if all the children are eliminated.
         return node.children.size != 0 && Arrays.stream(node.children)
-            .allMatch { subnode: TreeNodeShowingWhatAssertionsPrunedIt -> this.node_already_eliminated( subnode) } // LOOK changed
+            .allMatch { subnode: TreeNodeShowingWhatAssertionsPrunedIt -> this.node_already_eliminated( subnode) }
     }
 
     private fun add_tree_second_pass(node: TreeNodeShowingWhatAssertionsPrunedIt, timeout: TimeOut) {
@@ -81,7 +80,9 @@ class HeuristicWorkOutWhichAssertionsAreUsed {
          * Note that if a timeout error is produced, the assertions array will be sorted but otherwise unchanged
          * from the original call.
          *
-         * The algorithm is described in [AssertionTrimmingAlgorithm.md](https://github.com/DemocracyDevelopers/raire-rs/blob/main/raire/AssertionTrimmingAlgorithm.md)
+         * The algorithm is described in [AssertionTrimmingAlgorithm.md]
+         *   (https://github.com/DemocracyDevelopers/raire-rs/blob/main/raire/AssertionTrimmingAlgorithm.md)
+         * TODO Look at this closer
          */
         fun order_assertions_and_remove_unnecessary(
             assertions: MutableList<AssertionAndDifficulty>,

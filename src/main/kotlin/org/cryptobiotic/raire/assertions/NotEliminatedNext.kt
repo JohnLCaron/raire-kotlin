@@ -77,7 +77,7 @@ class NotEliminatedNext(
     override val isNEB: Boolean
         get() = false
 
-    override fun okEliminationOrderSuffix(eliminationOrderSuffix: IntArray?): EffectOfAssertionOnEliminationOrderSuffix? {
+    override fun okEliminationOrderSuffix(eliminationOrderSuffix: IntArray?): EffectOfAssertionOnEliminationOrderSuffix {
         // the order of the people who are left when down to the same length as self.continuing(). Or the whole thing if sub-prefix
         val startInclusive = max((eliminationOrderSuffix!!.size - continuing.size).toDouble(), 0.0)
             .toInt()
