@@ -22,7 +22,7 @@ abstract class Assertion {
      * set of possible elimination orders), this method checks whether this assertion rules out none, some,
      * or all elimination orders that end in the suffix. Note that a suffix of [3, 2] represents the
      * set of elimination orders that end with candidate '3' as the runner-up and '2' as the winner.  */
-    abstract fun okEliminationOrderSuffix(eliminationOrderSuffix: IntArray?): EffectOfAssertionOnEliminationOrderSuffix?
+    abstract fun okEliminationOrderSuffix(eliminationOrderSuffix: IntArray?): EffectOfAssertionOnEliminationOrderSuffix
 
     /** This method is used for testing purposes. Given an elimination order suffix,
      * let it through if it is allowed,

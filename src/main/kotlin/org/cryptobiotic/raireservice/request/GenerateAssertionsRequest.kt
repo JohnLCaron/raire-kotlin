@@ -43,10 +43,7 @@ class GenerateAssertionsRequest(
      * is available only to a subset of voters in the universe.
      */
     val totalAuditableBallots: Int,
-    /**
-     * The elapsed time allowed to raire to generate the assertions, in seconds.
-     */
-    val timeLimitSeconds: Double,
+    val timeLimitSeconds: Double, // The elapsed time allowed to raire to generate the assertions, in seconds.
     candidates: List<String>
 ) : ContestRequest(contestName, candidates) {
 

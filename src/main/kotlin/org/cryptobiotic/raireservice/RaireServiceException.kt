@@ -2,7 +2,7 @@ package org.cryptobiotic.raireservice
 
 import org.cryptobiotic.raire.RaireError
 
-
+// TODO wouldnt convert, double check it
 class RaireServiceException(message: String, val errorCode: RaireErrorCode) : Exception(message) {
 
     companion object {

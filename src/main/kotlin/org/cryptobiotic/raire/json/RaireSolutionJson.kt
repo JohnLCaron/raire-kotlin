@@ -7,18 +7,14 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
-import org.cryptobiotic.raire.RaireProblem
-import org.cryptobiotic.raire.RaireSolution
 import org.cryptobiotic.raire.algorithm.RaireResult
 import org.cryptobiotic.raire.assertions.Assertion
 import org.cryptobiotic.raire.assertions.AssertionAndDifficulty
 import org.cryptobiotic.raire.assertions.NotEliminatedBefore
 import org.cryptobiotic.raire.assertions.NotEliminatedNext
-import org.cryptobiotic.raire.pruning.TrimAlgorithm
 import org.cryptobiotic.raire.time.TimeTaken
 import org.cryptobiotic.raire.util.toArray
-import org.cryptobiotic.raireservice.entity.NEBAssertion
-import java.io.FileOutputStream
+import org.cryptobiotic.raire.util.toIntArray
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
@@ -101,12 +97,13 @@ data class RaireSolutionJson(
         val type: String,
         val winner: Int,
         val loser: Int,
+        val continuing: List<Int>?,
     ) {
         fun import(): Assertion {
-            return if (type == "NotEliminatedBefore")
+            return if (type == "NEB")
                 NotEliminatedBefore(winner, loser)
             else
-                NotEliminatedNext(winner, loser, IntArray(0)) // LOOK doesnt have continuing array
+                NotEliminatedNext(winner, loser, toIntArray(continuing!!))
         }
 
     }

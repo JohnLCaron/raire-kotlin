@@ -217,12 +217,12 @@ class GenerateAssertionsService(
             logger.debug {
                 java.lang.String.format(
                     "%s Proceeding to translate and save %d assertions to the " +
-                            "database for contest %s.", prefix, solution.assertions.size, request.contestName
+                            "database for contest %s.", prefix, solution.aandd.size, request.contestName
                 )
             }
             assertionRepository.translateAndSaveAssertions(
                 request.contestName,
-                request.totalAuditableBallots.toLong(), toArray(request.candidates), solution.assertions
+                request.totalAuditableBallots.toLong(), toArray(request.candidates), solution.aandd
             )
 
             logger.debug { String.format("%s Assertions persisted.", prefix) }

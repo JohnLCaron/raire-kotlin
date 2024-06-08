@@ -95,9 +95,7 @@ fun readRaireProblemFromFile(filename: String): RaireProblemJson? {
     val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true }
 
     Files.newInputStream(filepath, StandardOpenOption.READ).use { inp ->
-        val problem = jsonReader.decodeFromStream<RaireProblemJson>(inp)
-        // println(problem.toString())
-        return problem
+        return jsonReader.decodeFromStream<RaireProblemJson>(inp)
     }
 }
 
