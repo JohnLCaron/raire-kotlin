@@ -146,15 +146,15 @@ class CompareAAD : Comparator<AssertionAndDifficulty> {
     override fun compare(o1: AssertionAndDifficulty, o2: AssertionAndDifficulty): Int {
         if (o1.assertion is NotEliminatedBefore) {
             if (o2.assertion is NotEliminatedBefore) {
-                val neb1: NotEliminatedBefore = o1.assertion as NotEliminatedBefore
-                val neb2: NotEliminatedBefore = o2.assertion as NotEliminatedBefore
+                val neb1: NotEliminatedBefore = o1.assertion
+                val neb2: NotEliminatedBefore = o2.assertion
                 val d1: Int = neb1.winner - neb2.winner
                 return if (d1 != 0) d1 else (neb1.loser - neb2.loser)
             } else return -1 // o1 is NEB, o2 is NEN, o1<o2.
         } else {
             if (o2.assertion is NotEliminatedNext) {
                 val neb1: NotEliminatedNext = o1.assertion as NotEliminatedNext
-                val neb2: NotEliminatedNext = o2.assertion as NotEliminatedNext
+                val neb2: NotEliminatedNext = o2.assertion
                 val d0: Int = neb1.continuing.size - neb2.continuing.size
                 if (d0 != 0) return d0
                 val d1: Int = neb1.winner - neb2.winner

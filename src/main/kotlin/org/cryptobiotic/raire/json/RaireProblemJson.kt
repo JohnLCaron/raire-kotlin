@@ -7,11 +7,10 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
+import org.cryptobiotic.raire.RaireMetadata
 import org.cryptobiotic.raire.RaireProblem
-import org.cryptobiotic.raire.audittype.AuditType
-import org.cryptobiotic.raire.audittype.BallotComparisonOneOnDilutedMargin
 import org.cryptobiotic.raire.irv.Vote
-import org.cryptobiotic.raire.util.toArray
+import org.cryptobiotic.raire.pruning.TrimAlgorithm
 import java.io.FileOutputStream
 import java.nio.file.Files
 import java.nio.file.Path
@@ -40,66 +39,129 @@ import java.nio.file.StandardOpenOption
 //   "audit":{"type":"OneOnMargin","total_auditable_ballots":18165}
 //}
 
+// class RaireProblem(
+//    val metadata: Map<String, Any>,
+//    val votes: Array<Vote>,
+//    val num_candidates: Int,
+//    val winner: Int? = null,
+//    val audit: AuditType,
+//    val trim_algorithm: TrimAlgorithm?,
+//    val difficulty_estimate: Double?,
+//    val time_limit_seconds: Double?,
+//)
 
 @Serializable
 data class RaireProblemJson(
-    val metadata: ProblemMetadata,
-    val num_candidates: Int,
+    val metadata: RaireMetadataJson?, // Map<String, Any> : Any is hard to serialize hahaha
     val votes: List<VoteJson>,
-    val winner: Int,
-    val audit: Audit,
-    ) {
+    val num_candidates: Int,
+    val winner: Int?,
+    val audit: AuditTypeJson,
+    val trim_algorithm: String?,
+    val difficulty_estimate: Double?,
+    val time_limit_seconds: Double?,
+) {
 
-    @Serializable
-    data class ProblemMetadata(
-        val candidates: List<String>,
-        val contest: String,
-    )
+    fun import(): RaireProblem {
+        val trim_algorithm = safeEnumValueOf(this.trim_algorithm) ?: TrimAlgorithm.MinimizeTree
+        val votes = this.votes.map { it.import() }
+        val metadata = this.metadata?.import()
 
-    @Serializable
-    data class VoteJson(
-        val n: Int,
-        val prefs: List<Int>,
-    )  {
-        fun import() = Vote(n, IntArray(prefs.size) { prefs[it] } )
-    }
-
-    @Serializable
-    data class Audit(
-        val type: String,
-        val total_auditable_ballots: Int,
-    ) {
-        fun import(): AuditType = BallotComparisonOneOnDilutedMargin(total_auditable_ballots)
+        return RaireProblem(
+            metadata,
+            votes,
+            this.num_candidates,
+            this.winner,
+            this.audit.import(),
+            trim_algorithm,
+            this.difficulty_estimate,
+            this.time_limit_seconds,
+        )
     }
 
     override fun toString() = buildString {
-        appendLine("candidates=${metadata.candidates} (${metadata.candidates.size})")
-        appendLine("contest=${metadata.contest}")
         appendLine("num_candidates=$num_candidates, winner=$winner, audit=$audit")
         votes.forEach { appendLine("  $it") }
     }
-
-    fun import(): RaireProblem {
-        return RaireProblem(emptyMap(), toArray(votes.map{ it.import() }), num_candidates,
-            null, audit.import(), null, null, null)
-    }
-
 }
 
-fun readRaireProblemFromFile(filename: String): RaireProblemJson? {
+fun RaireProblem.publishJson(): RaireProblemJson {
+    val votes = this.votes.map { it.publishJson() }
+
+    return RaireProblemJson(
+        this.metadata?.publishJson() ?: RaireMetadataJson(emptyList(), null),
+        votes,
+        this.num_candidates,
+        this.winner,
+        this.audit.publishJson(),
+        this.trim_algorithm?.name ?: TrimAlgorithm.None.name,
+        this.difficulty_estimate,
+        this.time_limit_seconds,
+    )
+}
+
+@Serializable
+data class RaireMetadataJson(val candidates: List<String>, val contest: String?) {
+    fun import() = RaireMetadata(candidates, contest)
+}
+
+fun RaireMetadata.publishJson(): RaireMetadataJson {
+    return RaireMetadataJson(this.candidates, this.contest)
+}
+
+@Serializable
+data class VoteJson(val n: Int, val prefs: List<Int>) {
+    fun import() = Vote(n, IntArray(prefs.size) { prefs[it] })
+}
+
+fun Vote.publishJson(): VoteJson {
+    return VoteJson(this.n, this.prefs.toList())
+}
+
+// TODO error handling
+fun readRaireProblemFromFile(filename: String): RaireProblem {
     val filepath = Path.of(filename)
     if (!Files.exists(filepath)) {
-        println("file does not exist")
-        return null
+        throw RuntimeException("file does not exist")
     }
     val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true }
 
     Files.newInputStream(filepath, StandardOpenOption.READ).use { inp ->
-        return jsonReader.decodeFromStream<RaireProblemJson>(inp)
+        val jsonObject:RaireProblemJson =  jsonReader.decodeFromStream<RaireProblemJson>(inp)
+        return jsonObject.import()
     }
 }
 
-fun writeRaireProblem(problem: RaireProblemJson) {
+fun readRaireProblemFromString(json: String): RaireProblem {
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true }
+    val jsonObject:RaireProblemJson = jsonReader.decodeFromString<RaireProblemJson>(json)
+    return jsonObject.import()
+}
+
+fun RaireProblem.writeToFile(filename: String) {
     val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
-    jsonReader.encodeToStream(problem, System.out)
+    val jsonObject : RaireProblemJson =  this.publishJson()
+    FileOutputStream(filename).use { out ->
+        jsonReader.encodeToStream(jsonObject, out)
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+inline fun <reified T : Enum<T>> safeEnumValueOf(name: String?): T? {
+    if (name == null) {
+        return null
+    }
+
+    return try {
+        enumValueOf<T>(name)
+    } catch (e: IllegalArgumentException) {
+        null
+    }
+}
+
+fun inverseListToString(s: String): List<String> {
+    val chop = s.substring(1, s.length - 1); // chop off brackets
+    val tokes = chop.split(", ");
+    return tokes.map { it.trim()}
 }

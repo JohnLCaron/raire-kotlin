@@ -11,19 +11,22 @@
  */
 package org.cryptobiotic.raire
 
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.unwrapError
+import org.cryptobiotic.raire.algorithm.RaireResult
 import org.cryptobiotic.raire.audittype.BallotComparisonOneOnDilutedMargin
-import org.cryptobiotic.raire.irv.Vote
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class TestEdgeCases {
 
     @Test
     fun test_zero_candidates() {
         val problem = RaireProblem(
-            java.util.HashMap<String, Any>(),
-            arrayOf<Vote>(),
+            null,
+            emptyList(),
             0,
             null,
             BallotComparisonOneOnDilutedMargin(13500),
@@ -31,7 +34,7 @@ class TestEdgeCases {
             null,
             null
         )
-        val error = problem.solve().solution.Err
+        val error = problem.solve().solution.unwrapError()
         org.junit.jupiter.api.Assertions.assertNotNull(error)
         org.junit.jupiter.api.Assertions.assertEquals(RaireError.InvalidNumberOfCandidates::class.java, error!!.javaClass)
     }
@@ -39,8 +42,8 @@ class TestEdgeCases {
     @Test
     fun test_one_candidate() {
         val problem = RaireProblem(
-            java.util.HashMap<String, Any>(),
-            arrayOf<Vote>(),
+            null,
+            emptyList(),
             1,
             null,
             BallotComparisonOneOnDilutedMargin(13500),
@@ -48,8 +51,9 @@ class TestEdgeCases {
             null,
             null
         )
-        val result = problem.solve().solution.Ok
+        val result: Result<RaireResult, RaireError> = problem.solve().solution
         assertNotNull(result)
-        assertEquals(0, result.winner)
+        assertTrue(result is com.github.michaelbull.result.Ok)
+        assertEquals(0, result.value.winner)
     }
 }

@@ -23,6 +23,7 @@ data class BallotComparisonMACRO(
     /** The total number of ballots in the auditing universe of the contest we are generating assertions for.  */
     val total_auditable_ballots: Int
 ) : AuditType {
+
     override fun difficulty(lowestTallyWinner: Int, highestTallyLoser: Int): Double {
         if (lowestTallyWinner <= highestTallyLoser) return Double.POSITIVE_INFINITY
         else {

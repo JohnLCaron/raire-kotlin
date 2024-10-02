@@ -58,4 +58,22 @@ data class Vote (
         }
         return null
     }
+
+    // SEE https://youtrack.jetbrains.com/issue/IDEA-360068/Generate-equals-and-hashCode-wizard-doesnt-work
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Vote
+
+        if (n != other.n) return false
+        if (!prefs.contentEquals(other.prefs)) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = n.hashCode()
+        result = 31 * result + prefs.hashCode()
+        return result
+    }
 }

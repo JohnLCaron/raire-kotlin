@@ -11,31 +11,31 @@
  */
 package org.cryptobiotic.raire.assertions
 
-
 /** Simple tuple like structure that stores an Assertion alongside its difficulty and margin.
  * The difficulty of an assertion is a measure that reflects how much auditing effort is required
  * to check the assertion in an RLA. We expect that assertions with a higher difficulty will require
  * more ballot samples to check. A range of possible difficulty measures can be used by RAIRE (see
- * the AuditType interface and its implementations).  */
+ * the AuditType interface and its implementations).
+ *
+ * @property assertion
+ * @property difficulty A measure of how hard this assertion will be to audit. Assertions with a higher difficulty
+ *      * will require more ballot samples to check in an audit.
+ * @property margin Each assertion has a winner, a loser, and a context which determines whether a given
+ *      * votes falls into the winner's pile or the loser's. The margin of the assertion is equal to
+ *      * the difference in these tallies.
+ * @property status This field is not used by raire-java for computing assertions,
+ *      * may be useful information for assertion visualisation or information that election administrators would like
+ *      * to associate with this specific assertion. This field will be created as null by raire-java for efficiency
+ *      * reasons (rather than containing an empty object). If you want to use it, create an instance with
+ *      * a non-null value using the constructor. This is useful primarily to people using this data type
+ *      * in external software to annotate a set of assertions being verified.
+
+ */
 data class AssertionAndDifficulty(
     val assertion: Assertion,
-
-    /** A measure of how hard this assertion will be to audit. Assertions with a higher difficulty
-     * will require more ballot samples to check in an audit.  */
     val difficulty: Double,
-
-    /** Each assertion has a winner, a loser, and a context which determines whether a given
-     * votes falls into the winner's pile or the loser's. The margin of the assertion is equal to
-     * the difference in these tallies.  */
     val margin: Int,
-
-    /** This field is not used by raire-java for computing assertions,
-     * may be useful information for assertion visualisation or information that election administrators would like
-     * to associate with this specific assertion. This field will be created as null by raire-java for efficiency
-     * reasons (rather than containing an empty object). If you want to use it, create an instance with
-     * a non-null value using the constructor. This is useful primarily to people using this data type
-     * in external software to annotate a set of assertions being verified.  */
-    val status: Map<String, Any>? = null,
+    val status: MutableMap<String, Any> = mutableMapOf(), // TODO mutable ??
 ) {
     override fun toString(): String {
         return "  $assertion, difficulty=$difficulty, margin=$margin)"
