@@ -11,7 +11,6 @@
  */
 package org.cryptobiotic.raire
 
-
 /**
  * Everything that could go wrong in Raire. Typically, this will be returned as a thrown RaireException with this as its argument.
  * It is implemented as a class rather than an Exception hierarchy to facilitate detailed error serialization.

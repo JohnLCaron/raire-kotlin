@@ -37,8 +37,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
- * This class controls the post request mappings for all requests related
- * to assertions.
+ * This class controls the post request mappings for all requests related to assertions.
  * /generate-assertions takes a generate assertions request (contest by name) and generates the
  * assertions for that contest. In the case of success, it returns the winner
  * and stores the assertions in the database. Otherwise, it returns an error.
@@ -48,16 +47,11 @@ import org.slf4j.LoggerFactory
  * returns an error.
  */
 class AssertionController(
-    contestRepository: ContestRepository,
-    generateAssertionsService: GenerateAssertionsService,
-    getAssertionsService: GetAssertionsJsonService, getAssertionsCSVService: GetAssertionsCsvService
+    private val contestRepository: ContestRepository,
+    private val generateAssertionsService: GenerateAssertionsService,
+    private val getAssertionsService: GetAssertionsJsonService,
+    private val getAssertionsCSVService: GetAssertionsCsvService
 ) {
-    private val contestRepository: ContestRepository = contestRepository
-
-    private val generateAssertionsService: GenerateAssertionsService = generateAssertionsService
-
-    private val getAssertionsService: GetAssertionsJsonService = getAssertionsService
-    private val getAssertionsCSVService: GetAssertionsCsvService = getAssertionsCSVService
 
     /**
      * The API endpoint for generating assertions, by contest name, and returning the IRV winner as

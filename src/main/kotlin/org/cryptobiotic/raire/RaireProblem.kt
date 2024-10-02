@@ -50,7 +50,7 @@ import org.cryptobiotic.raire.util.toArray
  * @property time_limit_seconds Optional time limit to impose across all stages of computation by RAIRE.
  */
 data class RaireProblem(
-    val metadata: RaireMetadata?,
+    val metadata: RaireMetadata?, // not sure this should be optional
     val votes: List<Vote>,
     val num_candidates: Int,
     val winner: Int? = null,
@@ -70,7 +70,6 @@ data class RaireProblem(
                 try {
                     if (this.num_candidates < 1) throw RaireException(RaireError.InvalidNumberOfCandidates())
                     val votes = Votes(toArray(this.votes), this.num_candidates)
-                    // new RaireResult(votes,winner,audit,trim_algorithm==null?TrimAlgorithm.MinimizeTree:trim_algorithm,timeout));
                     Ok(
                         runRaire(
                             votes,
@@ -88,6 +87,7 @@ data class RaireProblem(
     }
 }
 
+// not sure this should be optional
 data class RaireMetadata(
     val candidates: List<String> = emptyList(),
     val contest: String? = null,

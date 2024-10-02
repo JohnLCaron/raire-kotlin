@@ -25,6 +25,7 @@ package org.cryptobiotic.raireservice.entity
  * assertion-generation and retrieval by RAIRE, we only care about the choice data, contest and
  * county IDs associated with a given entry in the cvr_contest_info table.
  */
+
 data class CVRContestInfo(
 
     /**
