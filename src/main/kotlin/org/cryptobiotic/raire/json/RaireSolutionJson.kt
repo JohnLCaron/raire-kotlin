@@ -11,7 +11,7 @@ import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 
 import org.cryptobiotic.raire.RaireError
-import org.cryptobiotic.raire.RaireError.InvalidNumberOfCandidates
+import org.cryptobiotic.raire.RaireError.*
 import org.cryptobiotic.raire.RaireSolution
 import org.cryptobiotic.raire.algorithm.RaireResult
 import org.cryptobiotic.raire.assertions.Assertion
@@ -19,6 +19,7 @@ import org.cryptobiotic.raire.assertions.AssertionAndDifficulty
 import org.cryptobiotic.raire.assertions.NotEliminatedBefore
 import org.cryptobiotic.raire.assertions.NotEliminatedNext
 import org.cryptobiotic.raire.time.TimeTaken
+import org.cryptobiotic.raire.util.toArray
 import org.cryptobiotic.raire.util.toIntArray
 import java.io.FileOutputStream
 import java.nio.file.Files
@@ -135,11 +136,23 @@ fun RaireResult.publishJson(): RaireResultJson {
 @Serializable
 data class RaireErrorJson(
     val type: String,
-    val message: String?,
+    val intArrayParam: List<Int>? = null,
+    val doubleParam: Double? = null,
 ) {
     fun import(): RaireError {
         return when (type) {
             "InvalidNumberOfCandidates" -> InvalidNumberOfCandidates()
+            "InvalidTimeout" -> InvalidTimeout()
+            "InvalidCandidateNumber" -> InvalidCandidateNumber()
+            "TimeoutCheckingWinner" -> TimeoutCheckingWinner()
+            "TimeoutFindingAssertions" -> TimeoutFindingAssertions(doubleParam!!)
+            "TimeoutTrimmingAssertions" -> TimeoutTrimmingAssertions()
+            "TiedWinners" -> TiedWinners(toIntArray(intArrayParam!!))
+            "WrongWinner" -> WrongWinner(toIntArray(intArrayParam!!))
+            "CouldNotRuleOut" -> CouldNotRuleOut(toIntArray(intArrayParam!!))
+            "InternalErrorRuledOutWinner" -> InternalErrorRuledOutWinner()
+            "InternalErrorDidntRuleOutLoser" -> InternalErrorDidntRuleOutLoser()
+            "InternalErrorTrimming" -> InternalErrorTrimming()
             else -> throw RuntimeException("unknown RaireError $type")
         }
     }
@@ -148,6 +161,16 @@ data class RaireErrorJson(
 fun RaireError.publishJson(): RaireErrorJson {
     return when (this) {
         is InvalidNumberOfCandidates -> RaireErrorJson("InvalidNumberOfCandidates", null)
+        is InvalidTimeout -> RaireErrorJson("InvalidTimeout", null)
+        is InvalidCandidateNumber -> RaireErrorJson("InvalidCandidateNumber", null)
+        is TimeoutCheckingWinner -> RaireErrorJson("TimeoutCheckingWinner", null)
+        is TimeoutFindingAssertions -> RaireErrorJson("TimeoutFindingAssertions", doubleParam=this.difficultyAtTimeOfStopping)
+        is TimeoutTrimmingAssertions -> RaireErrorJson("TimeoutTrimmingAssertions", null)
+        is TiedWinners -> RaireErrorJson("TiedWinners", this.expected.toList())
+        is WrongWinner -> RaireErrorJson("WrongWinner", this.expected.toList())
+        is CouldNotRuleOut -> RaireErrorJson("CouldNotRuleOut", this.eliminationOrder.toList())
+        is InternalErrorRuledOutWinner -> RaireErrorJson("InternalErrorRuledOutWinner", null)
+        is InternalErrorTrimming -> RaireErrorJson("InternalErrorTrimming", null)
         else -> throw RuntimeException("unknown RaireError ${this}")
     }
 }

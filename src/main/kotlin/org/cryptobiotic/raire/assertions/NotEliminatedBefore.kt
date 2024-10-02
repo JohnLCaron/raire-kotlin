@@ -15,15 +15,17 @@ import org.cryptobiotic.raire.audittype.AuditType
 import org.cryptobiotic.raire.irv.Votes
 import java.util.stream.IntStream
 
-/** A NotEliminatedBefore assertion (or NEB) says that a candidate _winner_ will always have
+/**
+ * A NotEliminatedBefore assertion (or NEB) says that a candidate _winner_ will always have
  * a higher tally than a candidate _loser_. What this means is that the minimum possible tally
  * that _winner_ will have at any stage of tabulation is greater than the maximum possible
- * tally _loser_ can ever achieve. For more detail on NEB assertions, refer to the Guide to RAIRE. */
+ * tally _loser_ can ever achieve. For more detail on NEB assertions, refer to the Guide to RAIRE.
+ */
 class NotEliminatedBefore(val winner: Int, val loser: Int) : Assertion() {
+
     override fun equals(other: Any?): Boolean {
         if (other is NotEliminatedBefore) {
-            val o = other
-            return o.winner == winner && o.loser == loser
+            return other.winner == winner && other.loser == loser
         } else {
             return false
         }
@@ -41,9 +43,8 @@ class NotEliminatedBefore(val winner: Int, val loser: Int) : Assertion() {
         return EffectOfAssertionOnEliminationOrderSuffix.NeedsMoreDetail // no information on relative order
     }
 
-    /** Compute and return the difficulty estimate associated with this assertion. This method
-     * computes the minimum tally of the assertion's winner (its first preference tally) and the
-     * maximum tally of the assertion's loser, according to the given set of Votes (votes). This
+    /** Compute the minimum tally of the assertion's winner (its first preference tally) and the
+     * maximum tally of the assertion's loser, according to the given set of Votes. This
      * maximum tally contains all votes that preference the loser higher than the winner, or on
      * which the loser appears and the winner does not. The given AuditType, audit, defines the
      * chosen method of computing assertion difficulty given these winner and loser tallies. */
@@ -51,17 +52,14 @@ class NotEliminatedBefore(val winner: Int, val loser: Int) : Assertion() {
         val tallyWinner: Int = votes.firstPreferenceOnlyTally(winner)
         val tallies: IntArray = votes.restrictedTallies(intArrayOf(winner, loser))
         val tallyLoser = tallies[1]
-        val difficulty: Double = audit.difficulty(
-            tallyWinner,
-            tallyLoser
-        ) // active paper count = tally_winner+tally_loser for historical reenactment
+        // active paper count = tally_winner+tally_loser for historical reenactment
+        val difficulty: Double = audit.difficulty(tallyWinner, tallyLoser)
         return DifficultyAndMargin(difficulty, if (tallyWinner >= tallyLoser) tallyWinner - tallyLoser else 0)
     }
 
     override fun toString(): String {
-        return "NotEliminatedBefore(loser=$loser, winner=$winner)"
+        return "NotEliminatedBefore(winner=$winner, loser=$loser)"
     }
-
 
     companion object {
         /**

@@ -32,7 +32,7 @@ import java.util.*
 
 class TreeNodeShowingWhatAssertionsPrunedIt(
     parent_elimination_order_suffix: IntArray, // The candidate eliminated at this step.
-    val candidate_being_eliminated_at_this_node: Int,
+    candidate_being_eliminated_at_this_node: Int,
     relevant_assertions: ArrayList<Int>,
     all_assertions: Array<Assertion>,
     num_candidates: Int,

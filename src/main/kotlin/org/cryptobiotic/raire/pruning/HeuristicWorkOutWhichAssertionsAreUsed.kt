@@ -19,7 +19,6 @@ import org.cryptobiotic.raire.assertions.NotEliminatedBefore
 import org.cryptobiotic.raire.assertions.NotEliminatedNext
 import org.cryptobiotic.raire.time.TimeOut
 import java.util.*
-import java.util.function.Predicate
 import java.util.function.Supplier
 import java.util.stream.Collectors
 import java.util.stream.IntStream
