@@ -19,20 +19,17 @@ raire-service. If not, see <https://www.gnu.org/licenses/>.
 */
 package org.cryptobiotic.raireservice.service
 
+import com.github.michaelbull.result.*
+
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.cryptobiotic.raire.RaireMetadata
 import org.cryptobiotic.raire.RaireSolution
+import org.cryptobiotic.raire.algorithm.RaireResult
 import org.cryptobiotic.raire.assertions.AssertionAndDifficulty
-import org.cryptobiotic.raire.util.toArray
 import org.cryptobiotic.raireservice.RaireErrorCode
 import org.cryptobiotic.raireservice.RaireServiceException
 import org.cryptobiotic.raireservice.repository.AssertionRepository
 import org.cryptobiotic.raireservice.request.GetAssertionsRequest
-import org.cryptobiotic.raireservice.response.RaireResultMixIn
-import java.util.*
-import java.util.function.Function
-import java.util.function.IntFunction
-import java.util.function.ToDoubleFunction
-import java.util.function.ToIntFunction
 
 /**
  * Collection of functions responsible for retrieving assertions from the colorado-rla database,
@@ -72,10 +69,13 @@ class GetAssertionsJsonService(private val assertionRepository: AssertionReposit
                     request.contestName
                 )
             }
+            /* TODO
             val metadata = mutableMapOf<String, Any>()
             metadata[Metadata.CANDIDATES] = request.candidates
             metadata[Metadata.RISK_LIMIT] = request.riskLimit
             metadata[Metadata.CONTEST] = request.contestName
+
+             */
 
             // Translate the assertions extracted from the database into AssertionAndDifficulty objects,
             // keeping track of the maximum difficulty and minimum margin.
@@ -105,9 +105,9 @@ class GetAssertionsJsonService(private val assertionRepository: AssertionReposit
             logger.debug { String.format("%s Minimum margin across assertions: %d.", prefix, minMargin) }
 
             // Using a version of RaireResult in which certain attributes will be ignored in serialisation.
-            val result = RaireResultMixIn( toArray(translated), maxDifficulty, minMargin, request.candidates.size)
+            val result = RaireResult( translated, maxDifficulty, minMargin, request.candidates.size)
 
-            val solution = RaireSolution(metadata, RaireSolution.RaireResultOrError(result))
+            val solution = RaireSolution(RaireMetadata(request.candidates, request.contestName), Ok(result))
             logger.debug { String.format("%s Constructed RaireSolution for return and serialisation.", prefix) }
             return solution
         } catch (ex: RaireServiceException) {

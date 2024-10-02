@@ -34,24 +34,26 @@ import java.util.function.Predicate
  * The point in the branch that the assertion attacks is called the 'best ancestor'. This class stores the assertion
  * attacking the branch at this point in the attribute 'best_assertion_for_ancestor' and indicates the point in the
  * branch being attacked in the attribute 'best_ancestor_length'.
+ *
+ * @property pi An elimination order suffix that needs to be ruled out.
+ * @property best_assertion_for_ancestor The best ancestor for the given suffix 'pi' refers to the point in the suffix
+ *    that we can attack most cheaply with an assertion. The best assertion we have been found to perform this
+ *    attack is stored in this attribute.
+ * @property  best_ancestor_length The best ancestor for pi will be a subset of pi, in particular the last
+ *    'best_ancestor_length' elements of pi. This attribute is essentially telling us the point in the elimination
+ *    order suffix 'pi' we are attacking with the assertion 'best_assertion_for_ancestor'.
+ * @property dive_done If not null, then a dive has already been done on the specified candidate. Diving is described
+ *    in A Guide to RAIRE Part 2. It is an algorithmic feature used to try and ascertain the overall difficulty of an audit
+ *    earlier in the process of searching for assertions. As RAIRE is searching for a set of assertions that will
+ *    result in the easiest audit, knowing this information earlier in the process will allow RAIRE to avoid wasting
+ *    time searching for unnecessarily good ways of ruling out alternate outcomes.
  */
 internal class SequenceAndEffort(
-    /** An elimination order suffix that needs to be ruled out.  */
-    val pi: IntArray, best_assertion_for_ancestor: AssertionAndDifficulty,
-    /** The best ancestor for pi will be a subset of pi, in particular the last 'best_ancestor_length' elements of pi.
-     * This attribute is essentially telling us the point in the elimination order suffix 'pi' we are attacking with the
-     * assertion 'best_assertion_for_ancestor'.  */
+    val pi: IntArray,
+    val best_assertion_for_ancestor: AssertionAndDifficulty,
     val best_ancestor_length: Int,
-    /** If not null, then a dive has already been done on the specified candidate. Diving is described in A Guide
-     * to RAIRE Part 2. It is an algorthmic feature used to try and ascertain the overall difficulty of an audit
-     * earlier in the process of searching for assertions. As RAIRE is searching for a set of assertions that will
-     * result in the easiest audit, knowing this information earlier in the process will allow RAIRE to avoid wasting
-     * time searching for unnecessarily good ways of ruling out alternate outcomes.  */
     var dive_done: Int?
 ) : Comparable<SequenceAndEffort> {
-    /** The best ancestor for the given suffix 'pi' refers to the point in the suffix that we can attack most cheaply
-     * with an assertion. The best assertion we have been found to perform this attack is stored in this attribute.  */
-    val best_assertion_for_ancestor: AssertionAndDifficulty = best_assertion_for_ancestor
 
     /**
      * RAIRE will store elimination order suffixes in a priority queue, ordered according to the difficulty of the best
@@ -63,18 +65,13 @@ internal class SequenceAndEffort(
      * difficulty than other.
      */
     override fun compareTo(other: SequenceAndEffort): Int {
-        return java.lang.Double.compare(
-            other.best_assertion_for_ancestor.difficulty,
-            best_assertion_for_ancestor.difficulty
-        )
+        return other.best_assertion_for_ancestor.difficulty.compareTo(best_assertion_for_ancestor.difficulty)
     }
-
 
     /** Returns the difficulty of the assertion being used to attack this elimination order suffix.  */
     fun difficulty(): Double {
         return best_assertion_for_ancestor.difficulty
     }
-
 
     /** Get the best ancestor of the elimination order suffix pi, which is a subset of pi. Recall that
      * the best ancestor is the point in the suffix that we can attack most cheaply with an assertion.  */

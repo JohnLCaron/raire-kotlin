@@ -68,15 +68,15 @@ interface AssertionRepository {
     fun translateAndSaveAssertions(
         contestName: String,
         universeSize: Long,
-        candidates: Array<String>,
-        assertions: Array<AssertionAndDifficulty>
+        candidates: List<String>,
+        assertions: List<AssertionAndDifficulty>
     ) {
         val prefix = "[translateAndSaveAssertions]"
         logger.debug {
             String.format(
                 "%s Translating and saving %s raire-java assertions to the " +
                         "database. Additional parameters: contest name %s; universe size %d; and candidates %s.",
-                prefix, assertions.size, contestName, universeSize, candidates.contentToString()
+                prefix, assertions.size, contestName, universeSize, candidates
             )
         }
 

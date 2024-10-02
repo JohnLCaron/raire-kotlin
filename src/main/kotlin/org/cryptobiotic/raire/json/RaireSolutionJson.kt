@@ -2,22 +2,29 @@
 
 package org.cryptobiotic.raire.json
 
+import com.github.michaelbull.result.*
+
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
+
+import org.cryptobiotic.raire.RaireError
+import org.cryptobiotic.raire.RaireError.InvalidNumberOfCandidates
+import org.cryptobiotic.raire.RaireSolution
 import org.cryptobiotic.raire.algorithm.RaireResult
 import org.cryptobiotic.raire.assertions.Assertion
 import org.cryptobiotic.raire.assertions.AssertionAndDifficulty
 import org.cryptobiotic.raire.assertions.NotEliminatedBefore
 import org.cryptobiotic.raire.assertions.NotEliminatedNext
 import org.cryptobiotic.raire.time.TimeTaken
-import org.cryptobiotic.raire.util.toArray
 import org.cryptobiotic.raire.util.toIntArray
+import java.io.FileOutputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
+import kotlin.collections.map
 
 //{
 //  "metadata":
@@ -46,120 +53,186 @@ import java.nio.file.StandardOpenOption
 
 @Serializable
 data class RaireSolutionJson(
-    val metadata: SolutionMetadata,
-    val solution: Solution
+    val metadata: RaireMetadataJson?,
+    val solution: OkOrErrorJson,  // not my favorite design
+) {
+    fun import() = RaireSolution(this.metadata?.import(), this.solution.import())
+}
+fun RaireSolution.publishJson(): RaireSolutionJson {
+    val sj: OkOrErrorJson = publishRRaireResultJson(this.solution)
+    return RaireSolutionJson(this.metadata?.publishJson(), sj)
+}
+
+@Serializable
+data class OkOrErrorJson(
+    val Ok: RaireResultJson?,
+    val Error: RaireErrorJson?,
+) {
+    fun import(): Result<RaireResult, RaireError> {
+        return if (this.Ok != null) Ok(this.Ok.import())
+        else if (this.Error != null) Err(this.Error.import())
+        else throw RuntimeException("RaireSolutionJson must have result or error")
+    }
+}
+
+fun publishRRaireResultJson(rr: Result<RaireResult, RaireError>): OkOrErrorJson {
+    var resultj: RaireResultJson? = null
+    var errorj: RaireErrorJson? = null
+
+    if (rr is Ok) {
+        val result = rr.value
+        resultj = result.publishJson()
+    } else if (rr is Err) {
+        val error = rr.unwrapError()
+        errorj = error.publishJson()
+    }
+
+    return OkOrErrorJson(resultj, errorj)
+}
+
+@Serializable
+data class RaireResultJson(
+    val assertions: List<AssertionAndDifficultyJson>,
+    val difficulty: Double,
+    val margin: Int,
+    val winner: Int,
+    val num_candidates: Int,
+    val time_to_determine_winners: TimeTakenJson,
+    val time_to_find_assertions: TimeTakenJson,
+    val time_to_trim_assertions: TimeTakenJson,
 ) {
 
-    @Serializable
-    data class SolutionMetadata(
-        val candidates: List<String>,
-        val contest: String,
-    )
-
-    @Serializable
-    data class Solution(
-        val Ok: Ok,
-    )
-
-    @Serializable
-    data class Ok(
-        val assertions: List<Assertions>,
-        val difficulty: Double,
-        val margin: Int,
-        val winner: Int,
-        val num_candidates: Int,
-        val time_to_determine_winners: Time,
-        val time_to_find_assertions: Time,
-        val time_to_trim_assertions: Time,
-    )
-
-    @Serializable
-    data class Assertions(
-        val assertion: AssertionJson,
-        val margin: Int,
-        val difficulty: Double,
-    ) {
-        //     val assertion: Assertion,
-        //
-        //    /** A measure of how hard this assertion will be to audit. Assertions with a higher difficulty
-        //     * will require more ballot samples to check in an audit.  */
-        //    val difficulty: Double,
-        //
-        //    /** Each assertion has a winner, a loser, and a context which determines whether a given
-        //     * votes falls into the winner's pile or the loser's. The margin of the assertion is equal to
-        //     * the difference in these tallies.  */
-        //    val margin: Int,
-        fun import() = AssertionAndDifficulty(assertion.import(), difficulty, margin)
-    }
-
-    @Serializable
-    data class AssertionJson(
-        val type: String,
-        val winner: Int,
-        val loser: Int,
-        val continuing: List<Int>?,
-    ) {
-        fun import(): Assertion {
-            return if (type == "NEB")
-                NotEliminatedBefore(winner, loser)
-            else
-                NotEliminatedNext(winner, loser, toIntArray(continuing!!))
-        }
-
-    }
-
-    @Serializable
-    data class Time(
-        val work: Long,
-        val seconds: Double,
-    ) {
-        fun import() = TimeTaken(work, seconds)
-
-    }
-
-    //         assertions: Array<AssertionAndDifficulty>,
-    //        difficulty: Double,
-    //        margin: Int,
-    //        winner: Int,
-    //        num_candidates: Int,
-    //        time_to_determine_winners: TimeTaken,
-    //        time_to_find_assertions: TimeTaken,
-    //        time_to_trim_assertions: TimeTaken,
-    //        warning_trim_timed_out: Boolean
-
     fun import(): RaireResult {
-        val ok = this.solution.Ok
-        val aand: List<AssertionAndDifficulty> = ok.assertions.map{ it.import() }
+        val aand: List<AssertionAndDifficulty> = this.assertions.map { it.import() }
         return RaireResult(
-            toArray(aand),
-            ok.difficulty,
-            ok.margin,
-            ok.winner,
-            ok.num_candidates,
-            ok.time_to_determine_winners.import(),
-            ok.time_to_find_assertions.import(),
-            ok.time_to_trim_assertions.import(),
+            aand,
+            this.difficulty,
+            this.margin,
+            this.winner,
+            this.num_candidates,
+            this.time_to_determine_winners.import(),
+            this.time_to_find_assertions.import(),
+            this.time_to_trim_assertions.import(),
             false
         )
     }
 }
 
-fun readRaireSolutionFromFile(filename: String): RaireSolutionJson? {
+fun RaireResult.publishJson(): RaireResultJson {
+    val aand: List<AssertionAndDifficultyJson> = this.assertAndDiff.map { it.publishJson() }
+    return RaireResultJson(
+        aand,
+        this.difficulty,
+        this.margin,
+        this.winner,
+        this.num_candidates,
+        this.time_to_determine_winners.publishJson(),
+        this.time_to_find_assertions.publishJson(),
+        this.time_to_trim_assertions.publishJson(),
+    )
+}
+
+@Serializable
+data class RaireErrorJson(
+    val type: String,
+    val message: String?,
+) {
+    fun import(): RaireError {
+        return when (type) {
+            "InvalidNumberOfCandidates" -> InvalidNumberOfCandidates()
+            else -> throw RuntimeException("unknown RaireError $type")
+        }
+    }
+}
+
+fun RaireError.publishJson(): RaireErrorJson {
+    return when (this) {
+        is InvalidNumberOfCandidates -> RaireErrorJson("InvalidNumberOfCandidates", null)
+        else -> throw RuntimeException("unknown RaireError ${this}")
+    }
+}
+
+// data class AssertionAndDifficulty(
+//    val assertion: Assertion,
+//    val difficulty: Double,
+//    val margin: Int,
+//    val status: MutableMap<String, Any> = mutableMapOf(), // TODO mutable ??
+
+@Serializable
+data class AssertionAndDifficultyJson(
+    val assertion: AssertionJson,
+    val difficulty: Double,
+    val margin: Int,
+    val status: Map<String, String>? = null, // oh jeez
+) {
+    fun import() = AssertionAndDifficulty(assertion.import(), difficulty, margin)
+}
+
+fun AssertionAndDifficulty.publishJson(): AssertionAndDifficultyJson {
+    val status = this.status.mapValues { it.toString() }
+    return AssertionAndDifficultyJson(assertion.publishJson(), difficulty, margin, status)
+}
+
+@Serializable
+data class AssertionJson(
+    val type: String,
+    val winner: Int,
+    val loser: Int,
+    val continuing: List<Int>?,
+) {
+    fun import(): Assertion {
+        return if (type == "NEB")
+            NotEliminatedBefore(winner, loser)
+        else
+            NotEliminatedNext(winner, loser, toIntArray(continuing!!))
+    }
+}
+
+fun Assertion.publishJson(): AssertionJson {
+    return if (this is NotEliminatedBefore)
+        AssertionJson("NEB", winner, loser, null)
+    else if (this is NotEliminatedNext)
+        AssertionJson("NEN", winner, loser, continuing.toList())
+    else throw RuntimeException("unknown Assertion type $this")
+}
+
+@Serializable
+data class TimeTakenJson(
+    val work: Long,
+    val seconds: Double,
+) {
+    fun import() = TimeTaken(work, seconds)
+}
+
+fun TimeTaken.publishJson() = TimeTakenJson(work, seconds)
+
+
+/////////////////////////////////////////////////////////////////////////
+
+// TODO error handling
+fun readRaireSolutionFromFile(filename: String): RaireSolution {
     val filepath = Path.of(filename)
     if (!Files.exists(filepath)) {
-        println("file does not exist")
-        return null
+        throw RuntimeException("file does not exist")
     }
     val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true }
 
     Files.newInputStream(filepath, StandardOpenOption.READ).use { inp ->
-        val raireSolution = jsonReader.decodeFromStream<RaireSolutionJson>(inp)
-        // writeRaireSolution(raireSolution)
-        return raireSolution
+        val jsonObject:RaireSolutionJson =  jsonReader.decodeFromStream<RaireSolutionJson>(inp)
+        return jsonObject.import()
     }
 }
 
-fun writeRaireSolution(raireSolution: RaireSolutionJson) {
+fun readRaireSolutionFromString(json: String): RaireSolution {
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true }
+    val jsonObject:RaireSolutionJson = jsonReader.decodeFromString<RaireSolutionJson>(json)
+    return jsonObject.import()
+}
+
+fun RaireSolution.writeToFile(filename: String) {
     val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
-    jsonReader.encodeToStream(raireSolution, System.out)
+    val jsonObject : RaireSolutionJson =  this.publishJson()
+    FileOutputStream(filename).use { out ->
+        jsonReader.encodeToStream(jsonObject, out)
+    }
 }

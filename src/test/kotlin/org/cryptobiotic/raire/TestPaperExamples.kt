@@ -13,6 +13,7 @@
 package org.cryptobiotic.raire
 
 import org.cryptobiotic.raire.algorithm.RaireResult
+import org.cryptobiotic.raire.algorithm.runRaire
 import org.cryptobiotic.raire.assertions.NotEliminatedBefore
 import org.cryptobiotic.raire.assertions.NotEliminatedNext
 import org.cryptobiotic.raire.audittype.BallotComparisonMACRO
@@ -191,7 +192,7 @@ class TestPaperExamples {
         val votes: Votes = votesInExample12
         val BRAVO_EG12: BallotPollingBRAVO = BallotPollingBRAVO(0.05, 27000)
         assertEquals(BRAVO_EG12.total_auditable_ballots, votes.totalVotes())
-        val res: RaireResult = RaireResult(votes, 0, BRAVO_EG12, TrimAlgorithm.None, TimeOut.never())
+        val res: RaireResult = runRaire(votes, 0, BRAVO_EG12, TrimAlgorithm.None, TimeOut.never())
         assertEquals(278.25, res.difficulty, 0.01)
     }
 
@@ -201,7 +202,7 @@ class TestPaperExamples {
         val votes: Votes = votesInExample12
         val MACRO_EG12 = BallotComparisonMACRO(0.05, 1.1, 27000)
         assertEquals(MACRO_EG12.total_auditable_ballots, votes.totalVotes())
-        val res = RaireResult(votes, 0, MACRO_EG12, TrimAlgorithm.None, TimeOut.never())
+        val res = runRaire(votes, 0, MACRO_EG12, TrimAlgorithm.None, TimeOut.never())
         assertEquals(44.49, res.difficulty, 0.01)
     }
 }

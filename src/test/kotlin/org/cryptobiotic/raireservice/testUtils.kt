@@ -101,7 +101,7 @@ object testUtils {
         return retrievedMargin == margin && doubleComparator.compare(
             retrievedDifficulty,
             difficulty
-        ) == 0 && result.aandd.size == numAssertions
+        ) == 0 && result.assertAndDiff.size == numAssertions
     }
 
     /**
@@ -154,7 +154,7 @@ object testUtils {
         val rightMarginAndDifficulty =
             (assertionAndDifficulty.margin == margin
                     && (doubleComparator.compare(assertionAndDifficulty.difficulty, difficulty) == 0)
-                    && (doubleComparator.compare(assertionAndDifficulty.status!!["risk"] as Double, risk) == 0)
+                    && (doubleComparator.compare(assertionAndDifficulty.status["risk"] as Double, risk) == 0)
             )
 
         if (assertionAndDifficulty.assertion is NotEliminatedNext) {

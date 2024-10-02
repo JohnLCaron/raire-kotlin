@@ -54,7 +54,7 @@ class NENAssertion
     universeSize: Long,
     margin: Int,
     difficulty: Double,
-    candidates: Array<String>,
+    candidates: List<String>,
     nen: NotEliminatedNext
 
 ) : ServiceAssertion(contestName, candidates[nen.winner], candidates[nen.loser], margin, universeSize, difficulty, nen.continuing.map { candidates[it] }.toList()) {
@@ -127,7 +127,7 @@ class NENAssertion
                 "%s Constructed NEN assertion with winner (%d) and loser (%d) " +
                         "indices with respect to candidate list %s: %s. " +
                         "Parameters: contest name %s; margin %d; universe size %d; and difficulty %f.", prefix,
-                nen.winner, nen.loser, candidates.contentToString(), this.description,
+                nen.winner, nen.loser, candidates, this.description,
                 contestName, margin, universeSize, difficulty
             )
         }

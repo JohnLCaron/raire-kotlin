@@ -19,7 +19,11 @@ raire-service. If not, see <https://www.gnu.org/licenses/>.
 */
 package org.cryptobiotic.raireservice.controller
 
+import com.github.michaelbull.result.*
+import org.cryptobiotic.raire.RaireError
+
 import org.cryptobiotic.raire.RaireSolution
+import org.cryptobiotic.raire.algorithm.RaireResult
 import org.cryptobiotic.raireservice.RaireErrorCode
 import org.cryptobiotic.raireservice.RaireServiceException
 import org.cryptobiotic.raireservice.repository.ContestRepository
@@ -86,18 +90,18 @@ class AssertionController(
 
         // Call raire-java to generate assertions, and check if it was able to do so successfully.
         logger.debug(String.format("%s Calling raire-java with assertion generation request.", prefix))
-        val solution: RaireSolution.RaireResultOrError = generateAssertionsService.generateAssertions(request)
+        val solution: Result<RaireResult, RaireError> = generateAssertionsService.generateAssertions(request)
 
-        if (solution.Ok != null) {
+        if (solution is Ok) {
             // Generation of assertions was successful, now save them to the database.
             logger.debug(
                 java.lang.String.format(
                     "%s Assertion generation successful: %d assertions " +
-                            "generated in %ss.", prefix, solution.Ok.aandd.size,
-                    solution.Ok.time_to_find_assertions.seconds
+                            "generated in %ss.", prefix, solution.value.assertAndDiff.size,
+                    solution.value.time_to_find_assertions.seconds
                 )
             )
-            generateAssertionsService.persistAssertions(solution.Ok, request)
+            generateAssertionsService.persistAssertions(solution.value, request)
 
             logger.debug(
                 java.lang.String.format(
@@ -109,7 +113,7 @@ class AssertionController(
             // Form and return request response.
             val response: GenerateAssertionsResponse = GenerateAssertionsResponse(
                 request.contestName,
-                request.candidates.get(solution.Ok.winner)
+                request.candidates.get(solution.value.winner)
             )
 
             logger.debug(String.format("%s Assertion generation and storage complete.", prefix))
@@ -117,7 +121,7 @@ class AssertionController(
         }
 
         // raire-java was not able to generate assertions successfully.
-        if (solution.Err == null) {
+        if (solution is Err) {
             val msg = "An error occurred in raire-java, yet no error information was returned."
             logger.error(String.format("%s %s", prefix, msg))
             throw RaireServiceException(msg, RaireErrorCode.INTERNAL_ERROR)
@@ -125,7 +129,7 @@ class AssertionController(
 
         // raire-java returned error information, form and throw an exception using that data. (Note:
         // we need to create the exception first to get a human readable message to log).
-        val ex = RaireServiceException.makeFromError(solution.Err, request.candidates)
+        val ex = RaireServiceException.makeFromError(solution.unwrapError(), request.candidates)
         val msg = "An error occurred in raire-java: " + ex.message
         logger.error(String.format("%s %s", prefix, msg))
         throw ex
@@ -135,15 +139,12 @@ class AssertionController(
     /**
      * The API endpoint for finding and returning assertions, by contest name. This endpoint returns
      * assertions in the form of a JSON Visualiser Report.
-     * @param request a GetAssertionsRequest, specifying an IRV contest name for which to retrieve the
-     * assertions.
+     * @param request a GetAssertionsRequest, specifying an IRV contest name for which to retrieve the assertions.
      * @return the assertions, as JSON (in the case of success) or an error.
-     * @throws RequestValidationException for invalid requests, such as non-existent, null, or
-     * non-IRV contest names.
-     * @throws RequestValidationException for invalid requests, such as non-existent, null, or non-IRV
-     * contest names.
+     * @throws RequestValidationException for invalid requests, such as non-existent, null, or non-IRV contest names.
+     * @throws RequestValidationException for invalid requests, such as non-existent, null, or non-IRV contest names.
      * @throws RaireServiceException if the request is valid but assertion retrieval fails, for example
-     * if there are no assertions for the contest.
+     *      if there are no assertions for the contest.
      * These exceptions are handled by ControllerExceptionHandler.
      */
     fun serveJson(request: GetAssertionsRequest) { // ResponseEntity<RaireSolution> {

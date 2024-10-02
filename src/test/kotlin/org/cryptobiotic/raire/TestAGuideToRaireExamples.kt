@@ -12,6 +12,7 @@
 package org.cryptobiotic.raire
 
 import org.cryptobiotic.raire.algorithm.RaireResult
+import org.cryptobiotic.raire.algorithm.runRaire
 import org.cryptobiotic.raire.assertions.NotEliminatedBefore
 import org.cryptobiotic.raire.audittype.BallotComparisonOneOnDilutedMargin
 import org.cryptobiotic.raire.irv.IRVResult
@@ -78,12 +79,12 @@ class TestAGuideToRaireExamples {
     @Test
     fun test_raire() {
         val votes: Votes = votes
-        val minAssertions = RaireResult(votes, C, AUDIT, TrimAlgorithm.MinimizeAssertions, TimeOut.never())
+        val minAssertions = runRaire(votes, C, AUDIT, TrimAlgorithm.MinimizeAssertions, TimeOut.never())
         assertEquals(27.0, minAssertions.difficulty, 1e-6)
-        assertEquals(5, minAssertions.aandd.size)
-        val minTree: RaireResult = RaireResult(votes, C, AUDIT, TrimAlgorithm.MinimizeTree, TimeOut.never())
+        assertEquals(5, minAssertions.assertAndDiff.size)
+        val minTree: RaireResult = runRaire(votes, C, AUDIT, TrimAlgorithm.MinimizeTree, TimeOut.never())
         assertEquals(27.0, minTree.difficulty, 1e-6)
-        assertEquals(6, minTree.aandd.size)
+        assertEquals(6, minTree.assertAndDiff.size)
     }
 
     companion object {

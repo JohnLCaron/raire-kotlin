@@ -19,14 +19,15 @@ raire-service. If not, see <https://www.gnu.org/licenses/>.
 */
 package org.cryptobiotic.raireservice.service
 
+import com.github.michaelbull.result.Result
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.cryptobiotic.raire.RaireError
+import org.cryptobiotic.raire.RaireMetadata
 import org.cryptobiotic.raire.RaireProblem
-import org.cryptobiotic.raire.RaireSolution
 import org.cryptobiotic.raire.algorithm.RaireResult
 import org.cryptobiotic.raire.audittype.BallotComparisonOneOnDilutedMargin
 import org.cryptobiotic.raire.pruning.TrimAlgorithm
 import org.cryptobiotic.raire.util.VoteConsolidator
-import org.cryptobiotic.raire.util.toArray
 import org.cryptobiotic.raireservice.RaireServiceException
 import org.cryptobiotic.raireservice.RaireErrorCode
 import org.cryptobiotic.raireservice.entity.Contest
@@ -61,7 +62,7 @@ class GenerateAssertionsService(
      * it referred to candidates that were not in the expected list) or an error arose in database
      * access.
      */
-    fun generateAssertions(request: GenerateAssertionsRequest): RaireSolution.RaireResultOrError {
+    fun generateAssertions(request: GenerateAssertionsRequest): Result<RaireResult, RaireError> {
         val prefix = "[generateAssertions]"
         try {
             logger.debug {
@@ -134,9 +135,7 @@ class GenerateAssertionsService(
 
             // If the extracted votes are valid, get raire-java to generate assertions.
             // First, form a metadata map containing contest details.
-            val metadata: MutableMap<String, Any> = HashMap()
-            metadata[Metadata.CANDIDATES] = request.candidates
-            metadata[Metadata.CONTEST] = request.contestName
+            val metadata = RaireMetadata(request.candidates, request.contestName)
 
             // Create the RaireProblem containing all information raire-java needs.
             logger.debug {
@@ -149,14 +148,14 @@ class GenerateAssertionsService(
                 )
             }
             val raireProblem = RaireProblem(
-                metadata, toArray(consolidator.votes), request.candidates.size, null,
+                metadata, consolidator.votes, request.candidates.size, null,
                 BallotComparisonOneOnDilutedMargin(request.totalAuditableBallots),
                 TrimAlgorithm.MinimizeAssertions, null, request.timeLimitSeconds
             )
 
             // Tell raire-java to generate assertions, returning a RaireSolutionOrError.
             logger.debug { String.format("%s Calling raire-java.", prefix) }
-            val result: RaireSolution.RaireResultOrError = raireProblem.solve().solution
+            val result: Result<RaireResult, RaireError> = raireProblem.solve().solution
 
             // Log fact that raire-java returned; more details about result will be logged in the caller.
             logger.debug { String.format("%s raire-java returned result; passing to controller.", prefix) }
@@ -217,12 +216,12 @@ class GenerateAssertionsService(
             logger.debug {
                 java.lang.String.format(
                     "%s Proceeding to translate and save %d assertions to the " +
-                            "database for contest %s.", prefix, solution.aandd.size, request.contestName
+                            "database for contest %s.", prefix, solution.assertAndDiff.size, request.contestName
                 )
             }
             assertionRepository.translateAndSaveAssertions(
                 request.contestName,
-                request.totalAuditableBallots.toLong(), toArray(request.candidates), solution.aandd
+                request.totalAuditableBallots.toLong(), request.candidates, solution.assertAndDiff
             )
 
             logger.debug { String.format("%s Assertions persisted.", prefix) }

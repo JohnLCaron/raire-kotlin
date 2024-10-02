@@ -52,7 +52,7 @@ class NEBAssertion
     universeSize: Long,
     margin: Int,
     difficulty: Double,
-    candidates: Array<String>,
+    candidates: List<String>,
     neb: NotEliminatedBefore
 
 ) : ServiceAssertion(contestName, candidates[neb.winner], candidates[neb.loser], margin, universeSize, difficulty) {
@@ -108,7 +108,7 @@ class NEBAssertion
                 "%s Constructed NEB assertion with winner (%d) and loser (%d) " +
                         "indices with respect to candidate list %s: %s. " +
                         "Parameters: contest name %s; margin %d; universe size %d; and difficulty %f.", prefix,
-                neb.winner, neb.loser, candidates.contentToString(), this.description,
+                neb.winner, neb.loser, candidates, this.description,
                 contestName, margin, universeSize, difficulty
             )
         }
